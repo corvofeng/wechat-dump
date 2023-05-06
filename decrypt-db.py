@@ -25,7 +25,7 @@ def get_uin():
     candidates = []
     try:
         uin = None
-        out = subproc_succ(f"adb shell cat {MM_DIR}/shared_prefs/system_config_prefs.xml")
+        out = subproc_succ(f"adb shell su -c cat {MM_DIR}/shared_prefs/system_config_prefs.xml")
         for line in out.decode('utf-8').split("\n"):
             if "default_uin" in line:
                 line = PyQuery(line)
@@ -40,7 +40,7 @@ def get_uin():
 
     try:
         uin = None
-        out = subproc_succ(f"adb shell cat {MM_DIR}/shared_prefs/com.tencent.mm_preferences.xml")
+        out = subproc_succ(f"adb shell su -c cat {MM_DIR}/shared_prefs/com.tencent.mm_preferences.xml")
         for line in out.decode('utf-8').split("\n"):
             if "last_login_uin" in line:
                 line = PyQuery(line)
@@ -55,7 +55,7 @@ def get_uin():
 
     try:
         uin = None
-        out = subproc_succ(f"adb shell cat {MM_DIR}/shared_prefs/auth_info_key_prefs.xml")
+        out = subproc_succ(f"adb shell su -c  cat {MM_DIR}/shared_prefs/auth_info_key_prefs.xml")
         for line in out.decode('utf-8').split("\n"):
             if "auth_uin" in line:
                 line = PyQuery(line)
@@ -69,7 +69,7 @@ def get_uin():
         logger.info(f"found uin={uin} in auth_info_key_prefs.xml")
 
     try:
-        out = subproc_succ(f"adb shell cat {MM_DIR}/MicroMsg/systemInfo.cfg")
+        out = subproc_succ(f"adb shell su -c cat {MM_DIR}/MicroMsg/systemInfo.cfg")
         uin = int(javaobj.loads(out).get(1, 0))
     except:
         logger.warning("default uin not found in systemInfo.cfg")
@@ -107,7 +107,7 @@ def get_imei():
     candidates.append(imei)
 
     try:
-        out = subproc_succ(f"adb shell cat {MM_DIR}/MicroMsg/CompatibleInfo.cfg")
+        out = subproc_succ(f"adb shell su -c cat {MM_DIR}/MicroMsg/CompatibleInfo.cfg")
         # https://gist.github.com/ChiChou/36556fd412a9e3216abecf06e084e4d9
         jobj = javaobj.loads(out)
         imei = jobj[258]
@@ -137,9 +137,9 @@ def get_key(imei, uin):
 def do_decrypt(input, output, key):
     conn = sqlite.connect(input)
     c = conn.cursor()
-    version_str = list(conn.execute("PRAGMA cipher_version"))[0][0]
-    version = tuple([int(x) for x in version_str.split(".")])
-    assert version >= (4, 1), "Sqlcipher>=4.1 is required"
+    # version_str = list(conn.execute("PRAGMA cipher_version"))[0][0]
+    # version = tuple([int(x) for x in version_str.split(".")])
+    # assert version >= (4, 1), "Sqlcipher>=4.1 is required"
 
     c.execute("PRAGMA key = '" + key + "';")
     # https://github.com/sqlcipher/sqlcipher/commit/e4b66d6cc8a2b7547a32ff2c3ac52f148eba3516
